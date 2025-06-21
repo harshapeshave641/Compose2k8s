@@ -1,0 +1,7 @@
+apiVersion: v1
+data:
+  NGINX_HOST: ''
+  NGINX_PORT: ''
+kind: ConfigMap
+metadata:
+  name: web-config

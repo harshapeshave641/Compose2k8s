@@ -1,0 +1,12 @@
+ingress:
+  host: myapp.local
+  rules:
+    - service: frontend
+      path: /
+      port: 80
+    - service: backend
+      path: /api
+      port: 5000
+  tls:
+    enabled: true
+    secretName: myapp-tls

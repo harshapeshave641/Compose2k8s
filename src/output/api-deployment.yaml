@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: api
+  name: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+      - envFrom:
+        - configMapRef:
+            name: api-config
+        image: node:18
+        name: api
+        ports:
+        - containerPort: 3000
+        volumeMounts:
+        - mountPath: /usr/src/app
+          name: api-volume-0
+      volumes:
+      - hostPath:
+          path: C:\Instagram_Bot\compose-to-k8s\src\app
+          type: DirectoryOrCreate
+        name: api-volume-0

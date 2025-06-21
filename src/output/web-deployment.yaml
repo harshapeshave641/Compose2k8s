@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: web
+  name: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+      - envFrom:
+        - configMapRef:
+            name: web-config
+        image: nginx:latest
+        name: web
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - mountPath: /usr/share/nginx/html
+          name: web-volume-0
+      volumes:
+      - hostPath:
+          path: C:\Instagram_Bot\compose-to-k8s\src\html
+          type: DirectoryOrCreate
+        name: web-volume-0
