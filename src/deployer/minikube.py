@@ -9,25 +9,28 @@ def run_command(cmd):
         print(f"Command failed: {cmd}")
         sys.exit(result.returncode)
 
-def apply_manifests_in_order(output_dir):
-    # Define the order of resource types
+def apply_manifests_in_order(base_output):
+    # Define the order of resource types and their subfolders
     order = [
-        "configmap",
-        "secret",
-        "persistentvolumeclaim",
-        "deployment",
-        "service",
-        "ingress"
+        ("configmaps", "configmap"),
+        ("secrets", "secret"),
+        ("pvcs", "persistentvolumeclaim"),
+        ("pvs", "persistentvolume"),
+        ("deployments", "deployment"),
+        ("services", "service"),
+        ("hpas", "horizontalpodautoscaler"),
+        ("ingress", "ingress"),
     ]
-    files = os.listdir(output_dir)
-    # Apply files by resource type order
-    for kind in order:
+    for folder, kind in order:
+        dir_path = os.path.join(base_output, folder)
+        if not os.path.exists(dir_path):
+            continue
+        files = [f for f in os.listdir(dir_path) if f.endswith(".yaml")]
         for file in files:
-            if kind in file.lower() and file.endswith(".yaml"):
-                run_command(f"kubectl apply -f \"{os.path.join(output_dir, file)}\"")
+            run_command(f"kubectl apply -f \"{os.path.join(dir_path, file)}\"")
 
 def main():
-    output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../output"))
+    base_output = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../output"))
 
     # Start minikube if not running
     print("Checking if Minikube is running...")
@@ -38,9 +41,9 @@ def main():
     else:
         print("Minikube is already running.")
 
-    # Apply manifests in the correct order
-    print(f"Applying Kubernetes manifests from {output_dir} in the correct order...")
-    apply_manifests_in_order(output_dir)
+    # Apply manifests in the correct order, grouped by resource type
+    print(f"Applying Kubernetes manifests from {base_output} in the correct order...")
+    apply_manifests_in_order(base_output)
 
     print("\nAll manifests applied!")
     print("To check your pods and services, run:")

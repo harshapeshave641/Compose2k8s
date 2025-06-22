@@ -24,6 +24,13 @@ spec:
         name: db
         ports:
         - containerPort: 5432
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
         volumeMounts:
         - mountPath: /var/lib/postgresql/data
           name: db-volume-0

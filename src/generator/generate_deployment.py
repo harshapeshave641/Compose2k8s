@@ -104,7 +104,19 @@ def generate_deployment(service_name, config, named_volumes=None):
                     'claimName': host_path
                 }
             })
+        
+        container['resources'] = {
+            "requests": {
+                "cpu": "100m",
+                "memory": "128Mi"
+            },
+            "limits": {
+                "cpu": "500m",
+                "memory": "512Mi"
+            }
+        }       
 
+    
     if volume_mounts:
         container['volumeMounts'] = volume_mounts
         deployment['spec']['template']['spec']['volumes'] = volumes
