@@ -1,7 +1,9 @@
 from utils.env import is_secret_key
 import os
 
-def generate_deployment(service_name, config):
+def generate_deployment(service_name, config, named_volumes=None):
+    named_volumes = named_volumes or set()
+
     deployment = {
         'apiVersion': 'apps/v1',
         'kind': 'Deployment',
@@ -28,11 +30,9 @@ def generate_deployment(service_name, config):
 
     container = deployment['spec']['template']['spec']['containers'][0]
 
-    # Command
     if config.get('command'):
         container['command'] = config['command'] if isinstance(config['command'], list) else [config['command']]
 
-    # Ports
     ports = config.get('ports')
     if ports:
         container['ports'] = []
@@ -43,7 +43,6 @@ def generate_deployment(service_name, config):
                 container_port = port
             container['ports'].append({'containerPort': int(container_port)})
 
-    # Environment: envFrom ConfigMap/Secret
     env = config.get('environment')
     if env:
         container['envFrom'] = []
@@ -56,27 +55,55 @@ def generate_deployment(service_name, config):
     volume_mounts = []
     volumes = []
     volume_defs = config.get('volumes', [])
+    
     for idx, v in enumerate(volume_defs):
+        vol_name = f"{service_name}-volume-{idx}"
+
         if ':' not in v:
-            continue  # Skip named volumes for now
+            # Named volume without mountPath → skip or default?
+            if v in named_volumes:
+                continue  # Might need to mount elsewhere
+            continue
 
         host_path, container_path = v.split(':', 1)
-        host_path = os.path.abspath(host_path)
-
-        vol_name = f"{service_name}-volume-{idx}"
 
         volume_mounts.append({
             'name': vol_name,
             'mountPath': container_path
         })
 
-        volumes.append({
-            'name': vol_name,
-            'hostPath': {
-                'path': host_path,
-                'type': 'DirectoryOrCreate'
-            }
-        })
+        if host_path.strip() == "":
+            # emptyDir
+            volumes.append({
+                'name': vol_name,
+                'emptyDir': {}
+            })
+        elif host_path.startswith('.') or host_path.startswith('/'):
+            # hostPath
+            abs_path = os.path.abspath(host_path)
+            volumes.append({
+                'name': vol_name,
+                'hostPath': {
+                    'path': abs_path,
+                    'type': 'DirectoryOrCreate'
+                }
+            })
+        elif host_path in named_volumes:
+            # PVC
+            volumes.append({
+                'name': vol_name,
+                'persistentVolumeClaim': {
+                    'claimName': host_path
+                }
+            })
+        else:
+            # Fallback to PVC if unknown
+            volumes.append({
+                'name': vol_name,
+                'persistentVolumeClaim': {
+                    'claimName': host_path
+                }
+            })
 
     if volume_mounts:
         container['volumeMounts'] = volume_mounts

@@ -1,7 +1,7 @@
 def generate_service(service_name, config):
     ports = config.get('ports')
     if not ports:
-        return None  # Don't generate Service if no ports
+        return None 
 
     service_ports = []
     for port in ports:

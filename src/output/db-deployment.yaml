@@ -28,7 +28,6 @@ spec:
         - mountPath: /var/lib/postgresql/data
           name: db-volume-0
       volumes:
-      - hostPath:
-          path: C:\Instagram_Bot\compose-to-k8s\src\db-data
-          type: DirectoryOrCreate
-        name: db-volume-0
+      - name: db-volume-0
+        persistentVolumeClaim:
+          claimName: db-data

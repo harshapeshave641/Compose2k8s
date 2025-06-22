@@ -17,7 +17,8 @@ def main():
     services = compose_data.get('services', {})
 
     os.makedirs('output', exist_ok=True)
-
+    from generator.generate_pvc_pv import generate_pv_and_pvc_templates_from_compose
+    generate_pv_and_pvc_templates_from_compose(compose_data, "output")
     for service_name, service_config in services.items():
         # Generate Deployment
         deployment = generate_deployment(service_name, service_config)
