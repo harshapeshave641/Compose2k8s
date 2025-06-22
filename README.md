@@ -17,13 +17,7 @@ A Python tool to convert Docker Compose files into organized Kubernetes manifest
 - **Organized output:** All manifests are grouped in the `output/` directory by resource type:
   - `deployments/`, `services/`, `configmaps/`, `secrets/`, `hpas/`, `pvcs/`, `pvs/`, `ingress/`
 - **Script to deploy** all generated manifests to Minikube in the correct order (ConfigMaps/Secrets → PV/PVC → Deployments → Services → HPAs → Ingress)
-- **CLI tool** to:
-  - Generate manifests
-  - List and view generated files
-  - Deploy to Minikube
-  - Test deployment health
-  - Clean output directory
-- **Support for private Docker registries** (via imagePullSecrets)
+
 - **Sample Compose and Ingress config files** included
 - **YAML validation and deployment testing scripts**
 
